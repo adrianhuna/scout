@@ -4,8 +4,6 @@ require 'colored'
 require 'curb'
 require 'squire'
 require 'scout/version'
-require 'scout/logger/std'
-require 'scout/logger'
 require 'scout/cache/redis_store'
 require 'scout/cache'
 require 'scout/downloader/curb_adapter'
@@ -16,7 +14,6 @@ module Scout
 end
 
 Scout.config do |config|
-  config.logger     = Scout::Logger.config
   config.downloader = Scout::Downloader.config
   config.cache      = Scout::Cache.config
 
@@ -26,10 +23,5 @@ Scout.config do |config|
 
   config.downloader do |downloader|
     downloader.adapter = Scout::Downloader::CurbAdapter
-  end
-
-  config.logger do |logger|
-    logger.output  = Scout::Logger::Std
-    logger.verbose = true
   end
 end

@@ -13,7 +13,7 @@ describe Scout::Downloader do
 
     response = double(:response)
     response.should_receive(:code).and_return(200)
-    response.should_receive(:body).twice.and_return('content')
+    response.should_receive(:body).and_return('content')
 
     adapter = double.as_null_object
     adapter.should_receive(:get).with('url').and_yield(block).and_return(response)
@@ -46,7 +46,7 @@ describe Scout::Downloader do
 
     it 'should store response in cache' do
       response = double(:response)
-      response.should_receive(:body).exactly(3).and_return('content')
+      response.should_receive(:body).exactly(2).and_return('content')
       response.should_receive(:code).and_return(200)
 
       cache = double(:cache)

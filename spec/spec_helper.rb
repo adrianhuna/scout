@@ -7,5 +7,4 @@ RSpec.configure do |config|
 end
 
 Scout.config do |config|
-  config.logger.verbose = false
 end

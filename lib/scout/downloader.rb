@@ -1,7 +1,6 @@
 module Scout
   class Downloader
     include Squire
-    include Scout::Logger
     include Scout::Cache
 
     attr_accessor :adapter, :headers, :cookies, :proxy_url
@@ -28,8 +27,6 @@ module Scout
       times = options[:times] || 3
 
       1.upto(times) do |n|
-        logger.before "Downloading #{url} (#{n}th try)"
-
         begin
           response = adapter.get(url) do |http|
             http.headers         = headers
@@ -38,15 +35,13 @@ module Scout
             http.proxy_url       = proxy_url if proxy_url
           end
 
-          logger.raise HTTPError.new "Response code #{response.code}." unless response.code == 200
+          raise HTTPError.new "Response code #{response.code}." unless response.code == 200
 
           cache.store(url, response.body) if cache.enabled?
 
-          logger.after "done (#{response.body.length} bytes)"
-
           return response
         rescue HTTPError => e
-          logger.error e.message
+          puts e.message
         ensure
           return response if times == n
         end
