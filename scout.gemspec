@@ -8,9 +8,9 @@ Gem::Specification.new do |gem|
   gem.version       = Scout::VERSION
   gem.authors       = ['Samuel Molnar']
   gem.email         = ['molnar.samuel@gmail.com']
-  gem.description   = %q{Description}
-  gem.summary       = %q{Summary}
-  gem.homepage      = ''
+  gem.description   = %q{Your scout knife for exploring web.}
+  gem.summary       = %q{Your scout knife for exploring web.}
+  gem.homepage      = 'https://github.com/smolnar/scout'
 
   gem.files         = `git ls-files`.split($/)
   gem.executables   = gem.files.grep(%r{^bin/}).map{ |f| File.basename(f) }

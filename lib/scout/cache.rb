@@ -1,11 +1,9 @@
 module Scout
   module Cache
-    include Squire
-
     attr_accessor :cache
 
     def cache
-      @cache ||= Cache.config.adapter
+      @cache ||= Scout.config.cache.adapter
     end
   end
 end

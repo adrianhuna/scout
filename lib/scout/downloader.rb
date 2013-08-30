@@ -1,6 +1,5 @@
 module Scout
   class Downloader
-    include Squire
     include Scout::Cache
 
     attr_accessor :adapter, :headers, :cookies, :proxy_url
@@ -49,7 +48,7 @@ module Scout
     end
 
     def adapter
-      @adapter ||= Downloder.config.adapter
+      @adapter ||= Scout.config.downloader.adapter
     end
 
     class Error < StandardError; end

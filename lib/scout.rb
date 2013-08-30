@@ -14,9 +14,6 @@ module Scout
 end
 
 Scout.config do |config|
-  config.downloader = Scout::Downloader.config
-  config.cache      = Scout::Cache.config
-
   config.cache do |cache|
     cache.adapter = Scout::Cache::RedisStore.new
   end
