@@ -15,6 +15,7 @@ end
 
 Scout.config do |config|
   config.cache do |cache|
+    cache.enabled = false
     cache.adapter = Scout::Cache::RedisStore.new
   end
 

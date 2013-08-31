@@ -4,7 +4,7 @@ module Scout
       attr_reader :enabled, :redis
 
       def initialize
-        @enabled = true
+        @enabled = Scout.config.cache.enabled
       end
 
       def enable=(value)
