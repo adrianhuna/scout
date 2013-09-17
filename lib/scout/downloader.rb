@@ -1,3 +1,5 @@
+require 'open-uri'
+
 module Scout
   class Downloader
     include Scout::Cache
@@ -21,6 +23,8 @@ module Scout
     end
 
     def download(url, options = {})
+      url = URI.encode(url)
+
       return cache.get(url) if cache.enabled? && cache.exists?(url)
 
       times = options[:times] || 3
