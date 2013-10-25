@@ -1,61 +1,52 @@
 require 'open-uri'
+require 'curb'
 
 module Scout
   class Downloader
-    include Scout::Cache
-
-    attr_accessor :adapter, :headers, :cookies, :proxy_url
-
-    def headers
-      @headers ||= Hash.new
-    end
-
-    def cookies
-      @cookies ||= Hash.new
-    end
-
-    def add_header(name, value)
-      headers[name.to_s.split('_').map(&:capitalize).join('-')] = value
-    end
-
-    def add_cookie(name, value)
-      cookies[name] = value
-    end
-
-    def download(url, options = {})
+    def self.download(url, options = {})
       url = URI.encode(url)
-
-      return cache.get(url) if cache.enabled? && cache.exists?(url)
 
       times = options[:times] || 3
 
       1.upto(times) do |n|
+        sleep options[:timeout] || 0
+
         begin
-          response = adapter.get(url) do |http|
-            http.headers         = headers
-            http.cookies         = cookies.map { |k, v| "#{k}=#{v}" }.join(';') if cookies.any?
+          response = Curl.get(url) do |http|
+            http.headers         = format_headers options[:headers] if options[:headers]
+            http.cookies         = format_cookies options[:cookies] if options[:cookies]
             http.follow_location = true
-            http.proxy_url       = proxy_url if proxy_url
+            http.proxy_url       = options[:proxy_url] if options[:proxy_url]
           end
 
-          raise HTTPError.new "Response code #{response.code}." unless response.code == 200
+          unless response.response_code == 200
+            raise HTTPError.new "Response code #{response.response_code}."
+          end
 
-          cache.store(url, response.body) if cache.enabled?
-
-          return response
+          return response.body_str
         rescue HTTPError => e
           puts e.message
-        ensure
-          return response if times == n
+
+          raise e if times == n
         end
       end
     end
 
-    def adapter
-      @adapter ||= Scout.config.downloader.adapter
+    private
+
+    def self.format_headers(headers)
+      headers.inject({}) do |result, (name, value)|
+        result[name.to_s.split('_').map(&:capitalize).join('-')] = value
+
+        result
+      end
     end
 
-    class Error < StandardError; end
-    class HTTPError < Downloader::Error; end
+    def self.format_cookies(cookies)
+      cookies.map { |k, v| "#{k}=#{v}" }.join(';')
+    end
+
+    class HTTPError < StandardError
+    end
   end
 end
