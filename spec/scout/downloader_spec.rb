@@ -2,65 +2,49 @@ require 'spec_helper'
 require 'scout/downloader'
 
 describe Scout::Downloader do
-  let(:downloader) { Scout::Downloader.new }
+  subject { Scout::Downloader }
 
-  it 'should download url and return content of page' do
-    block = double(:block)
-    block.should_receive(:headers=).with('User-Agent' => :user_agent)
-    block.should_receive(:cookies=).with('a=1;b=2')
-    block.should_receive(:follow_location=).with(true)
-    block.should_receive(:proxy_url=).with('proxy://proxy')
+  let(:url) { 'http://example.com' }
+  let(:curl) { double(:curl ) }
 
-    response = double(:response)
-    response.should_receive(:code).and_return(200)
-    response.should_receive(:body).and_return('content')
+  describe '.download' do
+    context 'when page is available' do
+      it 'downloads a content of a page' do
+        config = double(:config)
 
-    adapter = double.as_null_object
-    adapter.should_receive(:get).with('url').and_yield(block).and_return(response)
+        expect(config).to receive(:headers=).with('User-Agent' => :agent)
+        expect(config).to receive(:cookies=).with('a=1;b=2')
+        expect(config).to receive(:follow_location=).with(true)
+        expect(config).to receive(:proxy_url=).with('proxy://proxy')
 
-    downloader.adapter      = adapter
-    downloader.cache.enable = false
+        response = double(:response, response_code: 200, body_str: 'content')
 
-    downloader.add_header(:user_agent, :user_agent)
-    downloader.add_cookie(:a, 1)
-    downloader.add_cookie(:b, 2)
-    downloader.proxy_url = 'proxy://proxy'
+        expect(curl).to receive(:get).with(url).and_yield(config).and_return(response)
 
-    content = downloader.download('url')
+        options = {
+          headers: { user_agent: :agent },
+          cookies: { a: 1, b: 2 },
+          proxy_url: 'proxy://proxy'
+        }
 
-    content.body.should eql('content')
-  end
+        stub_const('Curl', curl)
 
-  context 'when caching' do
-    it 'should load response from cache' do
-      cache = double(:cache)
+        content = subject.download(url, options)
 
-      cache.should_receive(:enabled?).and_return(true)
-      cache.should_receive(:exists?).with('url').and_return(true)
-      cache.should_receive(:get).with('url').and_return('content')
-
-      downloader.cache = cache
-
-      downloader.download('url')
+        expect(content).to eql('content')
+      end
     end
 
-    it 'should store response in cache' do
-      response = double(:response)
-      response.should_receive(:body).exactly(2).and_return('content')
-      response.should_receive(:code).and_return(200)
+    context 'when page is not available' do
+      it 'raises an error' do
+        response = double(:response, response_code: 404)
 
-      cache = double(:cache)
-      cache.should_receive(:enabled?).twice.and_return(true)
-      cache.should_receive(:exists?).with('url').and_return(false)
-      cache.should_receive(:store).with('url', response.body).and_return(true)
+        expect(curl).to receive(:get).with(url).and_return(response)
 
-      adapter = double.as_null_object
-      adapter.should_receive(:get).with('url').and_return(response)
+        stub_const('Curl', curl)
 
-      downloader.adapter = adapter
-      downloader.cache   = cache
-
-      downloader.download('url')
+        expect { subject.download(url, times: 1) }.to raise_error Scout::Downloader::HTTPError, /404/
+      end
     end
   end
 end
