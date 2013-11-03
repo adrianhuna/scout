@@ -35,6 +35,8 @@ module Scout
       def register
         context = options[:on] == :instance ? base : base.singleton_class
 
+        original_method = :"original_#{method}"
+
         context.send(:alias_method, original_method, method)
 
         base.send(:define_method, :perform) do |*args|
@@ -46,10 +48,6 @@ module Scout
 
           target.perform_async(*args)
         end
-      end
-
-      def original_method
-        @original_method ||= :"original_#{method}"
       end
     end
   end
