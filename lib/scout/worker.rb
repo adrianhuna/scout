@@ -9,6 +9,8 @@ module Scout
 
     included do
       include Sidekiq::Worker
+
+      sidekiq_options backtrace: true
     end
 
     module ClassMethods
