@@ -35,21 +35,26 @@ module Scout
       end
 
       def register
-        context = options[:on] == :instance ? base : base.singleton_class
-
-        original_method = :"original_#{method}"
-
-        context.send(:alias_method, original_method, method)
+        target  = options[:on]
+        context = target == :instance ? base : base.singleton_class
 
         base.send(:define_method, :perform) do |*args|
-          context.send(original_method, *args)
+          target = target == :instance ? self : self.class
+
+          target.send(original_method, *args)
         end
+
+        context.send(:alias_method, original_method, method)
 
         context.send(:define_method, method) do |*args|
           target = self.is_a?(Class) ? self : self.class
 
           target.perform_async(*args)
         end
+      end
+
+      def original_method
+        @original_method ||= :"original_#{method}"
       end
     end
   end
