@@ -5,7 +5,6 @@ require 'sidekiq'
 require 'scout/version'
 require 'scout/downloader'
 require 'scout/worker'
-require 'scout/normalizer'
 
 module Scout
   include Squire
