@@ -23,7 +23,7 @@ module Scout
             raise HTTPError.new "Response code #{response.response_code}."
           end
 
-          return response.body_str
+          return options[:with_response] ? response : response.body_str
         rescue HTTPError => e
           puts e.message
 

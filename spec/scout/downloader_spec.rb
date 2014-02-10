@@ -33,6 +33,26 @@ describe Scout::Downloader do
 
         expect(content).to eql('content')
       end
+
+      it 'returns the entire response' do
+        config = double(:config)
+
+        expect(config).to receive(:follow_location=).with(true)
+
+        response = double(:response, response_code: 200, body_str: 'content')
+
+        expect(curl).to receive(:get).with(url).and_yield(config).and_return(response)
+
+        options = {
+          with_response: true
+        }
+
+        stub_const('Curl', curl)
+
+        response = subject.download(url, options)
+
+        expect(response).to eql(response)
+      end
     end
 
     context 'when page is not available' do
